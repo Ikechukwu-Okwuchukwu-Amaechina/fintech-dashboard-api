@@ -1,0 +1,39 @@
+<html>
+<body>
+<h1>Dashboard</h1>
+<div id="user">Loading...</div>
+
+
+<p>
+  <a href="transaction.html">Transactions</a> |
+  <a href="upload-profile.html">Upload Image</a> |
+  <a href="upload-video.html">Upload Video</a> |
+  <a href="login.html" onclick="localStorage.removeItem('token')">Logout</a>
+</p>
+
+<script>
+async function getUser(){
+  let res = await fetch('/api/dashboard', {
+    headers: {
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    }
+  });
+  let data = await res.json();
+  console.log(JSON.stringify(data,null,2))
+  let profileImgHtml = '';
+  if (data.user.profileImage) {
+    profileImgHtml = `<img src="http://localhost:5000/${data.user.profileImage}" width="150" />`;
+  } else {
+    profileImgHtml = '<div>No profile image uploaded.</div>';
+  }
+  document.getElementById('user').innerHTML = 
+    '<h2>Welcome ' + data.user.username + '!</h2>' +
+    profileImgHtml +
+    '<p>Role: ' + data.user.role + '</p>' +
+    '<p>Balance: NGN' + data.user.balance + '</p>' +
+    '<p>Total Transactions: ' + data.totalTransactions + '</p>';
+}
+getUser();
+</script>
+</body>
+</html>

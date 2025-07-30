@@ -1,0 +1,29 @@
+<html><body>
+<h1>Signup</h1>
+<form id="signupForm">
+  <input name="username" placeholder="username"><br>
+  <input name="password" placeholder="password" type="password"><br>
+  <button type="submit">Signup</button>
+</form>
+<div id="result"></div>
+<script>
+document.getElementById('signupForm').onsubmit = async function(e) {
+  e.preventDefault();
+  let username = e.target.username.value;
+  let password = e.target.password.value;
+  let res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  let data = await res.json();
+  if(data.token){
+    localStorage.setItem('token', data.token);
+    window.location.href = 'dashboard.html';
+  }else{
+    document.getElementById('result').innerText = JSON.stringify(data);
+  }
+}
+</script>
+<a href="login.html">Login</a>
+</body></html>

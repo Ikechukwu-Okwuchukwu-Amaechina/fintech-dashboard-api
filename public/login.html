@@ -1,0 +1,32 @@
+<html><body>
+<h1>Login</h1>
+<form id="loginForm">
+  <input name="username" placeholder="username"><br>
+  <input name="password" placeholder="password" type="password"><br>
+  <button type="submit">Login</button>
+</form>
+<div id="result"></div>
+
+<a href="signup.html">Signup</a>
+<script>
+document.getElementById('loginForm').onsubmit = async function(e) {
+  e.preventDefault();
+  let username = e.target.username.value;
+  let password = e.target.password.value;
+  let res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+  let data = await res.json();
+  if(data.token){
+    localStorage.setItem('token', data.token);
+    window.location.href = 'dashboard.html';
+  }else{
+    document.getElementById('result').innerText = JSON.stringify(data);
+  }
+}
+</script>
+</body>
+
+</html>

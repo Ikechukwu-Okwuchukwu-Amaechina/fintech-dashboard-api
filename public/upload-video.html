@@ -1,0 +1,31 @@
+<html></html>
+<body>
+<h1>Upload Profile Video</h1>
+<form id="uploadVideoForm" enctype="multipart/form-data">
+  <input type="file" name="video" accept="video/mp4,video/mov" required><br><br>
+  <button type="submit">Upload</button>
+</form>
+<div id="videoResult"></div>
+<script>
+document.getElementById('uploadVideoForm').onsubmit = async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+  const token = localStorage.getItem('token');
+  let res = await fetch('/api/profile/upload-video', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token
+    },
+    body: formData
+  });
+  let data = await res.json();
+  if (res.ok) {
+    document.getElementById('videoResult').innerHTML = 'Upload successful!<br>Video path: ' + data.url;
+  } else {
+    document.getElementById('videoResult').innerHTML = 'Error: ' + (data.message || 'Upload failed');
+  }
+};
+</script>
+</body>
+</html>

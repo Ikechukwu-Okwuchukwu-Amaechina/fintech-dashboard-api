@@ -1,0 +1,27 @@
+<html><body>
+<h1>Transaction</h1>
+<form id="txnForm">
+  <input name="type" placeholder="credit or debit"><br>
+  <input name="amount" placeholder="amount" type="number"><br>
+  <button type="submit">Submit</button>
+</form>
+<div id="result"></div>
+<script>
+document.getElementById('txnForm').onsubmit = async function(e) {
+  e.preventDefault();
+  let type = e.target.type.value;
+  let amount = e.target.amount.value;
+  let res = await fetch('/api/transactions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    },
+    body: JSON.stringify({ type, amount })
+  });
+  let data = await res.json();
+  document.getElementById('result').innerText = JSON.stringify(data);
+}
+</script>
+<a href="dashboard.html">Dashboard</a> <a href="login.html" onclick="localStorage.removeItem('token')">Logout</a>
+</body></html>
