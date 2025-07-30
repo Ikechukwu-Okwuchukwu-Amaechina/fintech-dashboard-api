@@ -25,8 +25,15 @@ app.use(helmet({
     }
   }
 }));
+const allowedOrigins = ['https://fintech-dashboard-api-mu.vercel.app'];
 app.use(cors({
-  origin: true,
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error('CORS not allowed from this origin'), false);
+    }
+    return callback(null, true);
+  },
   credentials: true,
   allowedHeaders: ['Authorization', 'Content-Type']
 }));
