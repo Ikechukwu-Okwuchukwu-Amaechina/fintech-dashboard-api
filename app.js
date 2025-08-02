@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 
+// Updated fintech dashboard API - August 2025
 const authRoutes = require('./routes/authRoutes');
 const testRoute = require('./routes/testRoute');
 const dashboardRoutes = require('./routes/dashboardRoutes');
@@ -49,6 +50,10 @@ app.use(
   })
 );
 
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: "OK" });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
