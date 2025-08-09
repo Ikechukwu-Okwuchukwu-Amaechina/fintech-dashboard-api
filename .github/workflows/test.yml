@@ -1,9 +1,9 @@
 name: Run Tests on Push
 on:
   push:
-    branches: [ main ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ main ]
+    branches: [ master, main ]
  
 jobs:
   test:
@@ -29,3 +29,6 @@ jobs:
  
       - name: Run Tests
         run: npm test
+        env:
+          MONGODB_URI_TEST: mongodb://localhost:27017/test_db
+          JWT_SECRET: test_secret_key

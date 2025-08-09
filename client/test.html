@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fintech Dashboard - API Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Backend Connection</h3>
+        <button onclick="testHealth()">Test API Health</button>
+        <div id="healthResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test Registration</h3>
+        <input type="text" id="regUsername" placeholder="Username" value="testuser">
+        <input type="password" id="regPassword" placeholder="Password" value="password123">
+        <button onclick="testRegister()">Register Test User</button>
+        <div id="registerResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test Login</h3>
+        <input type="text" id="loginUsername" placeholder="Username" value="testuser">
+        <input type="password" id="loginPassword" placeholder="Password" value="password123">
+        <button onclick="testLogin()">Login</button>
+        <div id="loginResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Test Dashboard (requires login)</h3>
+        <button onclick="testDashboard()">Get Dashboard Data</button>
+        <div id="dashboardResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. Navigation Links</h3>
+        <a href="login.html"><button>Go to Login Page</button></a>
+        <a href="dashboard.html"><button>Go to Dashboard</button></a>
+        <a href="signup.html"><button>Go to Signup Page</button></a>
+    </div>
+
+    <script>
+        var API_URL = 'http://localhost:5000';
+        
+        async function testHealth() {
+            var result = document.getElementById('healthResult');
+            try {
+                var response = await fetch(API_URL + '/api/health');
+                var data = await response.json();
+                result.textContent = '✅ Backend connected!\nStatus: ' + data.status;
+            } catch (error) {
+                result.textContent = '❌ Backend connection failed!';
+            }
+        }
+
+        async function testRegister() {
+            var result = document.getElementById('registerResult');
+            var username = document.getElementById('regUsername').value;
+            var password = document.getElementById('regPassword').value;
+            
+            try {
+                var response = await fetch(API_URL + '/api/auth/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: username, password: password})
+                });
+                var data = await response.json();
+                
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    result.textContent = '✅ Registration successful!\n' + JSON.stringify(data, null, 2);
+                } else {
+                    result.textContent = '❌ Registration failed!\nError: ' + data.message;
+                }
+            } catch (error) {
+                result.textContent = '❌ Registration failed!';
+            }
+        }
+
+        async function testLogin() {
+            var result = document.getElementById('loginResult');
+            var username = document.getElementById('loginUsername').value;
+            var password = document.getElementById('loginPassword').value;
+            
+            try {
+                var response = await fetch(API_URL + '/api/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: username, password: password})
+                });
+                var data = await response.json();
+                
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    result.textContent = '✅ Login successful!\nToken saved to localStorage\n' + JSON.stringify(data, null, 2);
+                } else {
+                    result.textContent = '❌ Login failed!\nError: ' + data.message;
+                }
+            } catch (error) {
+                result.textContent = '❌ Login failed!';
+            }
+        }
+
+        async function testDashboard() {
+            var result = document.getElementById('dashboardResult');
+            
+            try {
+                var response = await fetch(API_URL + '/api/dashboard', {
+                    headers: {'Authorization': 'Bearer ' + localStorage.getItem('token')}
+                });
+                var data = await response.json();
+                result.textContent = '✅ Dashboard data loaded!\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                result.textContent = '❌ Dashboard failed!';
+            }
+        }
+
+        window.onload = function() {
+            testHealth();
+        };
+    </script>
+</body>
+</html>

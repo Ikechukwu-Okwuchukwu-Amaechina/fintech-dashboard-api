@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Fintech Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            color: #333;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .card h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .balance {
+            font-size: 2em;
+            font-weight: bold;
+            color: #28a745;
+            margin: 10px 0;
+        }
+        .user-info {
+            margin: 10px 0;
+        }
+        .user-info strong {
+            color: #555;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            padding: 10px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+        }
+        .transaction-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        .transaction-type {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .credit {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .debit {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .actions {
+            margin-top: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Fintech Dashboard</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- User Information Card -->
+        <div class="card">
+            <h2>Account Information</h2>
+            <div id="userInfo" class="loading">Loading user information...</div>
+        </div>
+
+        <!-- Balance Card -->
+        <div class="card">
+            <h2>Account Balance</h2>
+            <div id="balanceInfo" class="loading">Loading balance...</div>
+        </div>
+
+        <!-- Recent Transactions Card -->
+        <div class="card">
+            <h2>Recent Transactions</h2>
+            <div id="transactionsList" class="loading">Loading transactions...</div>
+            <div class="actions">
+                <button class="btn" onclick="makeNewTransaction()">Make Transaction</button>
+                <button class="btn" onclick="loadTransactions()">Refresh</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var API_URL = 'http://localhost:5000';
+        
+        if (!localStorage.getItem('token')) {
+            window.location.href = 'login.html';
+        }
+
+        window.onload = function() {
+            loadDashboard();
+            loadTransactions();
+        };
+
+        async function loadDashboard() {
+            document.getElementById('userInfo').innerHTML = 'Loading...';
+            document.getElementById('balanceInfo').innerHTML = 'Loading...';
+            
+            try {
+                var response = await fetch(API_URL + '/api/dashboard', {
+                    headers: {'Authorization': 'Bearer ' + localStorage.getItem('token')}
+                });
+                var data = await response.json();
+                
+                var userHtml = '<div class="user-info"><strong>Username:</strong> ' + data.user.username + '</div>' +
+                              '<div class="user-info"><strong>Role:</strong> ' + data.user.role + '</div>' +
+                              '<div class="user-info"><strong>Total Transactions:</strong> ' + data.totalTransactions + '</div>';
+                document.getElementById('userInfo').innerHTML = userHtml;
+
+                var balanceHtml = '<div class="balance">NGN ' + data.user.balance.toLocaleString() + '</div>';
+                document.getElementById('balanceInfo').innerHTML = balanceHtml;
+            } catch (error) {
+                document.getElementById('userInfo').innerHTML = '<div style="color: red;">Error loading user info</div>';
+                document.getElementById('balanceInfo').innerHTML = '<div style="color: red;">Error loading balance</div>';
+            }
+        }
+
+        async function loadTransactions() {
+            document.getElementById('transactionsList').innerHTML = 'Loading...';
+            
+            try {
+                var response = await fetch(API_URL + '/api/transactions', {
+                    headers: {'Authorization': 'Bearer ' + localStorage.getItem('token')}
+                });
+                var data = await response.json();
+                var transactionsList = document.getElementById('transactionsList');
+                
+                if (data && data.data && data.data.length > 0) {
+                    var html = '';
+                    var transactions = data.data.slice(0, 5);
+                    
+                    for (var i = 0; i < transactions.length; i++) {
+                        var t = transactions[i];
+                        var date = new Date(t.timestamp).toDateString();
+                        var sign = t.type === 'credit' ? '+' : '-';
+                        
+                        html += '<div class="transaction-item">' +
+                               '<div>' +
+                               '<span class="transaction-type ' + t.type + '">' + t.type.toUpperCase() + '</span>' +
+                               '<div style="margin-top: 5px; font-size: 0.9em; color: #666;">' + date + '</div>' +
+                               '</div>' +
+                               '<div style="text-align: right;">' +
+                               '<div style="font-weight: bold;">' + sign + 'NGN ' + t.amount.toLocaleString() + '</div>' +
+                               '<div style="font-size: 0.9em; color: #666;">Balance: NGN ' + t.balanceAfter.toLocaleString() + '</div>' +
+                               '</div>' +
+                               '</div>';
+                    }
+                    
+                    transactionsList.innerHTML = html;
+                } else {
+                    transactionsList.innerHTML = '<div style="text-align: center; color: #666;">No transactions found</div>';
+                }
+            } catch (error) {
+                document.getElementById('transactionsList').innerHTML = '<div style="color: red;">Error loading transactions</div>';
+            }
+        }
+
+        async function makeNewTransaction() {
+            var type = prompt('Enter transaction type (credit or debit):');
+            if (!type || (type !== 'credit' && type !== 'debit')) {
+                alert('Invalid transaction type. Please enter "credit" or "debit".');
+                return;
+            }
+
+            var amount = prompt('Enter amount:');
+            if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+                alert('Invalid amount. Please enter a positive number.');
+                return;
+            }
+
+            try {
+                var response = await fetch(API_URL + '/api/transactions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    body: JSON.stringify({type: type, amount: parseFloat(amount)})
+                });
+                var data = await response.json();
+                
+                alert('Transaction successful! New balance: NGN ' + data.newBalance.toLocaleString());
+                loadDashboard();
+                loadTransactions();
+            } catch (error) {
+                alert('Transaction failed');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

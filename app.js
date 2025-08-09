@@ -26,14 +26,30 @@ app.use(helmet({
     }
   }
 }));
-const allowedOrigins = ['https://fintech-dashboard-api-mu.vercel.app'];
+const allowedOrigins = [
+  'https://fintech-dashboard-api-mu.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5000'
+];
+
+// Add frontend URL from environment variable if available
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
   origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
       return callback(new Error('CORS not allowed from this origin'), false);
     }
-    return callback(null, true);
   },
   credentials: true,
   allowedHeaders: ['Authorization', 'Content-Type']

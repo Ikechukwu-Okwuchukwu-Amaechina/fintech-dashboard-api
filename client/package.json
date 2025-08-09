@@ -1,0 +1,16 @@
+{
+  "name": "fintech-dashboard-client",
+  "version": "1.0.0",
+  "description": "Frontend client for fintech dashboard",
+  "main": "login.html",
+  "scripts": {
+    "start": "serve .",
+    "build": "echo 'No build step required for static files'"
+  },
+  "keywords": ["fintech", "dashboard", "frontend"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "serve": "^14.0.0"
+  }
+}
