@@ -27,7 +27,12 @@ app.use(helmet({
   }
 }));
 const allowedOrigins = [
+  'https://fintech-dash-five.vercel.app',
+  'https://fintech-dashboard-2.vercel.app',
   'https://fintech-dashboard-api-mu.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'http://127.0.0.1:5500'
 ];
 
 // Add frontend URL from environment variable if available
